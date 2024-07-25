@@ -6,20 +6,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.mengoj.common.ErrorCode;
 import com.yupi.mengoj.constant.CommonConstant;
 import com.yupi.mengoj.exception.BusinessException;
-import com.yupi.mengoj.model.dto.question.QuestionQueryRequest;
+import com.yupi.mengoj.judge.JudgeService;
 import com.yupi.mengoj.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.yupi.mengoj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.yupi.mengoj.model.entity.Question;
-import com.yupi.mengoj.model.entity.QuestionSubmit;
 import com.yupi.mengoj.model.entity.QuestionSubmit;
 import com.yupi.mengoj.model.entity.User;
 import com.yupi.mengoj.model.enums.QuestionSubmitLanguageEnum;
 import com.yupi.mengoj.model.enums.QuestionSubmitStatusEnum;
 import com.yupi.mengoj.model.vo.QuestionSubmitVO;
-import com.yupi.mengoj.model.vo.QuestionVO;
-import com.yupi.mengoj.model.vo.UserVO;
 import com.yupi.mengoj.service.QuestionService;
-import com.yupi.mengoj.service.QuestionSubmitService;
 import com.yupi.mengoj.service.QuestionSubmitService;
 import com.yupi.mengoj.mapper.QuestionSubmitMapper;
 import com.yupi.mengoj.service.UserService;
@@ -27,15 +23,12 @@ import com.yupi.mengoj.utils.SqlUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.AopContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +46,10 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     @Resource
     private UserService userService;
+
+    @Resource
+    @Lazy
+    private JudgeService judgeService;
 
     /**
      * 提交题目
@@ -84,13 +81,18 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setCode(questionSubmitAddRequest.getCode());
         questionSubmit.setLanguage(questionSubmitAddRequest.getLanguage());
         //设置初始状态
-        questionSubmit.setStatus(QuestionSubmitStatusEnum.WWAITING.getValue());
+        questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
         questionSubmit.setJudgeInfo("{}");
         boolean save = this.save(questionSubmit);
         if (!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
-        return questionSubmit.getId();
+        Long questionSubmitId = questionSubmit.getId();
+        // 执行判题服务
+        CompletableFuture.runAsync(() -> {
+            judgeService.doJudge(questionSubmitId);
+        });
+        return questionSubmitId;
     }
 
 

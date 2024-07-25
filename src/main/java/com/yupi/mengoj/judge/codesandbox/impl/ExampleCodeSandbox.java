@@ -3,7 +3,7 @@ package com.yupi.mengoj.judge.codesandbox.impl;
 import com.yupi.mengoj.judge.codesandbox.CodeSandbox;
 import com.yupi.mengoj.judge.codesandbox.model.ExecuteCodeRequest;
 import com.yupi.mengoj.judge.codesandbox.model.ExecuteCodeResponse;
-import com.yupi.mengoj.model.dto.questionsubmit.JudgeInfo;
+import com.yupi.mengoj.judge.codesandbox.model.JudgeInfo;
 import com.yupi.mengoj.model.enums.JudgeInfoMessageEnum;
 import com.yupi.mengoj.model.enums.QuestionSubmitStatusEnum;
 import lombok.extern.slf4j.Slf4j;

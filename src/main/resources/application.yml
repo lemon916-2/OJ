@@ -1,6 +1,5 @@
 # 公共配置文件
-# @author <a href="https://github.com/liyupi">程序员鱼皮</a>
-# @from <a href="https://yupi.icu">编程导航知识星球</a>
+
 spring:
   application:
     name: mengoj-bcakend
@@ -45,7 +44,7 @@ spring:
       max-file-size: 10MB
 server:
   address: 0.0.0.0
-  port: 8131
+  port: 8121
   servlet:
     context-path: /api
     # cookie 30 天过期
@@ -92,4 +91,5 @@ cos:
     bucket: xxx
 #代码沙箱配置
 codesandbox:
-  type: example
+  type: remote
+
